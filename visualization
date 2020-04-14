@@ -22,7 +22,7 @@ function varargout = gui(varargin)
 
 % Edit the above text to modify the response to help gui
 
-% Last Modified by GUIDE v2.5 05-Apr-2020 17:17:25
+% Last Modified by GUIDE v2.5 13-Apr-2020 17:39:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -42,7 +42,7 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
-
+end
 
 % --- Executes just before gui is made visible.
 function gui_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -60,17 +60,14 @@ guidata(hObject, handles);
 
 % UIWAIT makes gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-
+end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = gui_OutputFcn(hObject, eventdata, handles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 ncfile = 'o3_surface_20180701000000.nc';
 lati = ncread(ncfile, 'lat');
 longe = ncread(ncfile, 'lon');
+
 newMatrix = readmatrix('24HR_CBE_01.csv');
 newMatrix(400,:) = [0];
 newMatrix(:,700) = [0];
@@ -83,18 +80,11 @@ load coast;
 hold on;
 plot(long,lat,'k');
 title("Initial Measurment");
-% Get default command line output from handles structure
 varargout{1} = handles.output;
+end
 
-
-% --- Executes on slider movement.
+% --- changes hours based on the slider
 function slider3_Callback(hObject, eventdata, handles)
-% hObject    handle to slider3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 ncfile = 'o3_surface_20180701000000.nc';
 
 sliderVal = get(hObject,'Value');
@@ -107,7 +97,6 @@ fileName = dir('24HR_CBE_*.csv');
 
 theFiles = fileName(slider).name;
 newMatrix = readmatrix(theFiles);
-disp(class(fileName(slider).name));
 newMatrix(400,:) = [0];
 newMatrix(:,700) = [0];
 showmap = pcolor(longe,lati,newMatrix);
@@ -123,19 +112,137 @@ if slider == 1
 else
     title("Hour: " + (slider-1));
 end
+end
 
 
-%assignin('base','sliderVal',sliderVal);
-%set(handles.textNum,'String',num2str(sliderVal));
-
-% --- Executes during object creation, after setting all properties.
+% --- creates the slider
 function slider3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+end
 
+
+% --- plays video of all hours
+function pushbutton4_Callback(hObject, eventdata, handles)
+ncfile = 'o3_surface_20180701000000.nc';
+
+lati = ncread(ncfile, 'lat'); %reads the lat variable
+longe = ncread(ncfile, 'lon'); %reads the lon variable
+fileDirectory = dir('24HR_CBE_*.csv');  % creates a directory of all files beging with 24HR_CBE_
+
+for k = 1 : length(fileDirectory)   %loop to dispaly all the files in the directory
+    file = fileDirectory(k).name;   %takes the current file
+    matrix = readmatrix(file);      %creates an array by reading the current file 
+    matrix(400,:) = [0];            %changes the size of the matrix
+    matrix(:,700) = [0];            
+    showmap = pcolor(longe,lati,matrix); %displays the map of Europe
+    showmap.EdgeAlpha = 0; %removes the frames from each field in the csv
+    load coast;
+    hold on;
+    plot(long,lat,'k'); %plots the data in color
+    title("Hour: " + (k-1));
+    showmap; % displays the map
+    pause(0.3)
+end
+end
+
+
+% --- changes map colour to redscale
+function radiobutton1_Callback(hObject, eventdata, handles)
+
+if get(hObject,'Value') == true
+    colormap('gray');
+else
+    colormap default;
+end
+end
+
+% --- changes map colour to bluescale
+function radiobutton2_Callback(hObject, eventdata, handles)
+map = [0 0 1
+       0.1 0.1 1
+       0.15 0.15 1
+       0.2 0.2 1
+       0.25 0.25 1
+       0.3 0.3 1
+       0.35 0.35 1
+       0.4 0.4 1
+       0.45 0.45 1
+       0.5 0.5 1
+       0.55 0.55 1
+       0.6 0.6 1
+       0.65 0.65 1
+       0.7 0.7 1
+       0.75 0.75 1
+       0.8 0.8 1
+       0.85 0.85 1
+       0.9 0.9 1
+       0.95 0.95 1
+       1 1 1];
+if get(hObject,'Value') == true
+    colormap(map);
+else
+    colormap default;
+end
+end
+
+
+% --- red
+function radiobutton3_Callback(hObject, eventdata, handles)
+map = [1 0 0 
+       1 0.1 0.1 
+       1 0.15 0.15 
+       1 0.2 0.2 
+       1 0.25 0.25 
+       1 0.3 0.3 
+       1 0.35 0.35 
+       1 0.4 0.4 
+       1 0.45 0.45 
+       1 0.5 0.5 
+       1 0.55 0.55 
+       1 0.6 0.6 
+       1 0.65 0.65 
+       1 0.7 0.7 
+       1 0.75 0.75 
+       1 0.8 0.8 
+       1 0.85 0.85 
+       1 0.9 0.9 
+       1 0.95 0.95 
+       1 1 1];
+if get(hObject,'Value') == true
+    colormap(map);
+else
+    colormap default;
+end
+end
+
+
+% --- green
+function radiobutton4_Callback(hObject, eventdata, handles)
+map = [0 0.4 0 
+       0.1 0.45 0.1 
+       0.15 0.455 0.15 
+       0.2 0.5 0.2 
+       0.25 0.55 0.25 
+       0.3 0.555 0.3 
+       0.35 0.6 0.35 
+       0.4 0.65 0.4 
+       0.45 0.655 0.45 
+       0.5 0.7 0.5 
+       0.55 0.75 0.55 
+       0.6 0.8 0.6 
+       0.65 0.85 0.65 
+       0.7 0.9 0.7 
+       0.75 0.95 0.75 
+       0.8 1 0.8 
+       0.85 1 0.85 
+       0.9 1 0.9 
+       0.95 1 0.95 
+       1 1 1];
+if get(hObject,'Value') == true
+    colormap(map);
+else
+    colormap default;
+end
+end
